@@ -30,18 +30,18 @@ import im.delight.android.location.SimpleLocation;
 public class IroningActivity extends AppCompatActivity {
 
     public static final String DATA_TITLE = "TITLE";
-    int hargaKaos = 3000, hargaCelana = 4000, hargaJaket = 6000, hargaSprei = 0, hargaKarpet = 0;
-    int itemCount1 = 0, itemCount2 = 0, itemCount3 = 0;
-    int countKaos, countCelana, countJaket, totalItems, totalPrice;
-    String strTitle, strCurrentLocation, strCurrentLatLong;
-    double strCurrentLatitude;
-    double strCurrentLongitude;
-    SimpleLocation simpleLocation;
-    AddDataViewModel addDataViewModel;
-    Button btnCheckout;
-    ImageView imageAdd1, imageAdd2, imageAdd3, imageAdd4, imageAdd5,
+    private int hargaKaos = 3000, hargaCelana = 4000, hargaJaket = 6000, hargaSprei = 0, hargaKarpet = 0;
+    private int itemCount1 = 0, itemCount2 = 0, itemCount3 = 0;
+    private int countKaos, countCelana, countJaket, totalItems, totalPrice;
+    private String strTitle, strCurrentLocation, strCurrentLatLong;
+    private double strCurrentLatitude;
+    private double strCurrentLongitude;
+    private SimpleLocation simpleLocation;
+    private AddDataViewModel addDataViewModel;
+    private Button btnCheckout;
+    private ImageView imageAdd1, imageAdd2, imageAdd3, imageAdd4, imageAdd5,
             imageMinus1, imageMinus2, imageMinus3, imageMinus4, imageMinus5;
-    TextView tvTitle, tvInfo, tvJumlahBarang, tvTotalPrice, tvKaos, tvCelana, tvJaket, tvSprei, tvKarpet,
+    private TextView tvTitle, tvInfo, tvJumlahBarang, tvTotalPrice, tvKaos, tvCelana, tvJaket, tvSprei, tvKarpet,
             tvPriceKaos, tvPriceCelana, tvPriceJaket, tvPriceSprei, tvPriceKarpet;
 
     @Override
@@ -52,11 +52,7 @@ public class IroningActivity extends AppCompatActivity {
         setLocation();
         setStatusbar();
         setInitLayout();
-        setDataKaos();
-        setDataCelana();
-        setDataJaket();
-        setDataSprei();
-        setDataKarpet();
+        setItemData();
         setInputData();
         getCurrentLocation();
     }
@@ -68,11 +64,8 @@ public class IroningActivity extends AppCompatActivity {
             SimpleLocation.openSettings(this);
         }
 
-        //get location
         strCurrentLatitude = simpleLocation.getLatitude();
         strCurrentLongitude = simpleLocation.getLongitude();
-
-        //set location lat long
         strCurrentLatLong = strCurrentLatitude + "," + strCurrentLongitude;
     }
 
@@ -90,10 +83,8 @@ public class IroningActivity extends AppCompatActivity {
     private void setInitLayout() {
         tvTitle = findViewById(R.id.tvTitle);
         tvInfo = findViewById(R.id.tvInfo);
-
         tvJumlahBarang = findViewById(R.id.tvJumlahBarang);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
-
         tvKaos = findViewById(R.id.tvKaos);
         tvCelana = findViewById(R.id.tvCelana);
         tvJaket = findViewById(R.id.tvJaket);
@@ -133,75 +124,78 @@ public class IroningActivity extends AppCompatActivity {
         tvInfo.setText("Hilangkan kerutan dari pakaian Anda dengan setrika listrik & uap.");
     }
 
-    private void setDataKaos() {
-        tvKaos.setText(FunctionHelper.rupiahFormat(hargaKaos));
-        imageAdd1.setOnClickListener(v -> {
-            itemCount1 = itemCount1 + 1;
-            tvPriceKaos.setText(itemCount1);
-            countKaos = hargaKaos * itemCount1;
-            setTotalPrice();
+    private void setItemData() {
+        setItemDataHelper(tvKaos, imageAdd1, imageMinus1, tvPriceKaos, hargaKaos, 1);
+        setItemDataHelper(tvCelana, imageAdd2, imageMinus2, tvPriceCelana, hargaCelana, 2);
+        setItemDataHelper(tvJaket, imageAdd3, imageMinus3, tvPriceJaket, hargaJaket, 3);
+        setItemDataHelper(tvSprei, imageAdd4, imageMinus4, tvPriceSprei, hargaSprei, 4);
+        setItemDataHelper(tvKarpet, imageAdd5, imageMinus5, tvPriceKarpet, hargaKarpet, 5);
+    }
+
+    private void setItemDataHelper(TextView tvItem, ImageView imageAdd, ImageView imageMinus, TextView tvPrice, int harga, int itemIndex) {
+        tvItem.setText(FunctionHelper.rupiahFormat(harga));
+
+        imageAdd.setOnClickListener(v -> {
+            increaseItemCount(itemIndex, tvPrice, harga);
         });
 
-        imageMinus1.setOnClickListener(v -> {
-            if (itemCount1 > 0) {
-                itemCount1 = itemCount1 - 1;
-                tvPriceKaos.setText(itemCount1);
-            }
-            countKaos = hargaKaos * itemCount1;
-            setTotalPrice();
+        imageMinus.setOnClickListener(v -> {
+            decreaseItemCount(itemIndex, tvPrice, harga);
         });
     }
 
-    private void setDataCelana() {
-        tvCelana.setText(FunctionHelper.rupiahFormat(hargaCelana));
-        imageAdd2.setOnClickListener(v -> {
-            itemCount2 = itemCount2 + 1;
-            tvPriceCelana.setText(itemCount2);
-            countCelana = hargaCelana * itemCount2;
-            setTotalPrice();
-        });
-
-        imageMinus2.setOnClickListener(v -> {
-            if (itemCount2 > 0) {
-                itemCount2 = itemCount2 - 1;
-                tvPriceCelana.setText(itemCount2);
-            }
-            countCelana = hargaCelana * itemCount2;
-            setTotalPrice();
-        });
+    private void increaseItemCount(int itemIndex, TextView tvPrice, int harga) {
+        switch (itemIndex) {
+            case 1:
+                itemCount1++;
+                tvPrice.setText(String.valueOf(itemCount1));
+                countKaos = harga * itemCount1;
+                break;
+            case 2:
+                itemCount2++;
+                tvPrice.setText(String.valueOf(itemCount2));
+                countCelana = harga * itemCount2;
+                break;
+            case 3:
+                itemCount3++;
+                tvPrice.setText(String.valueOf(itemCount3));
+                countJaket = harga * itemCount3;
+                break;
+            case 4:
+                Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk sprei!", Toast.LENGTH_SHORT).show();
+                break;
+            case 5:
+                Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk karpet!", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        setTotalPrice();
     }
 
-    private void setDataJaket() {
-        tvJaket.setText(FunctionHelper.rupiahFormat(hargaJaket));
-        imageAdd3.setOnClickListener(v -> {
-            itemCount3 = itemCount3 + 1;
-            tvPriceJaket.setText(itemCount3);
-            countJaket = hargaJaket * itemCount3;
-            setTotalPrice();
-        });
-
-        imageMinus3.setOnClickListener(v -> {
-            if (itemCount3 > 0) {
-                itemCount3 = itemCount3 - 1;
-                tvPriceJaket.setText(itemCount3);
-            }
-            countJaket = hargaJaket * itemCount3;
-            setTotalPrice();
-        });
-    }
-    ;
-    private void setDataSprei() {
-        tvSprei.setText(FunctionHelper.rupiahFormat(hargaSprei));
-        imageAdd4.setOnClickListener(v -> Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk sprei!", Toast.LENGTH_SHORT).show());
-
-        imageMinus4.setOnClickListener(v -> Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk sprei!", Toast.LENGTH_SHORT).show());
-    }
-
-    private void setDataKarpet() {
-        tvKarpet.setText(FunctionHelper.rupiahFormat(hargaKarpet));
-        imageAdd5.setOnClickListener(v -> Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk karpet!", Toast.LENGTH_SHORT).show());
-
-        imageMinus5.setOnClickListener(v -> Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk karpet!", Toast.LENGTH_SHORT).show());
+    private void decreaseItemCount(int itemIndex, TextView tvPrice, int harga) {
+        switch (itemIndex) {
+            case 1:
+                if (itemCount1 > 0) itemCount1--;
+                tvPrice.setText(String.valueOf(itemCount1));
+                countKaos = harga * itemCount1;
+                break;
+            case 2:
+                if (itemCount2 > 0) itemCount2--;
+                tvPrice.setText(String.valueOf(itemCount2));
+                countCelana = harga * itemCount2;
+                break;
+            case 3:
+                if (itemCount3 > 0) itemCount3--;
+                tvPrice.setText(String.valueOf(itemCount3));
+                countJaket = harga * itemCount3;
+                break;
+            case 4:
+                Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk sprei!", Toast.LENGTH_SHORT).show();
+                break;
+            case 5:
+                Toast.makeText(IroningActivity.this, "Layanan tidak tersedia untuk karpet!", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        setTotalPrice();
     }
 
     private void setTotalPrice() {
@@ -246,5 +240,4 @@ public class IroningActivity extends AppCompatActivity {
         }
         window.setAttributes(layoutParams);
     }
-
 }

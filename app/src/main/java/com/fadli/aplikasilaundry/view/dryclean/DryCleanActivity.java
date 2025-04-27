@@ -30,19 +30,20 @@ import im.delight.android.location.SimpleLocation;
 public class DryCleanActivity extends AppCompatActivity {
 
     public static final String DATA_TITLE = "TITLE";
-    int hargaKaos = 8000, hargaCelana = 6000, hargaJaket = 9000, hargaSprei = 65000, hargaKarpet = 200000;
-    int itemCount1 = 0, itemCount2 = 0, itemCount3 = 0, itemCount4 = 0, itemCount5 = 0;
-    int countKaos, countCelana, countJaket, countSprei, countKarpet, totalItems, totalPrice;
-    String strTitle, strCurrentLocation, strCurrentLatLong;
-    double strCurrentLatitude;
-    double strCurrentLongitude;
-    SimpleLocation simpleLocation;
-    AddDataViewModel addDataViewModel;
-    Button btnCheckout;
-    ImageView imageAdd1, imageAdd2, imageAdd3, imageAdd4, imageAdd5,
-            imageMinus1, imageMinus2, imageMinus3, imageMinus4, imageMinus5;
-    TextView tvTitle, tvInfo, tvJumlahBarang, tvTotalPrice, tvKaos, tvCelana, tvJaket, tvSprei, tvKarpet,
-            tvPriceKaos, tvPriceCelana, tvPriceJaket, tvPriceSprei, tvPriceKarpet;
+    private final int[] prices = {8000, 6000, 9000, 65000, 200000};  // Kaos, Celana, Jaket, Sprei, Karpet
+    private final int[] itemCounts = new int[5];
+    private final TextView[] priceTextViews = new TextView[5];
+    private final ImageView[] addButtons = new ImageView[5];
+    private final ImageView[] minusButtons = new ImageView[5];
+    private final TextView[] itemTextViews = new TextView[5];
+
+    private int totalItems, totalPrice;
+    private String strTitle, strCurrentLocation, strCurrentLatLong;
+    private double strCurrentLatitude, strCurrentLongitude;
+    private SimpleLocation simpleLocation;
+    private AddDataViewModel addDataViewModel;
+    private Button btnCheckout;
+    private TextView tvTitle, tvInfo, tvJumlahBarang, tvTotalPrice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +53,6 @@ public class DryCleanActivity extends AppCompatActivity {
         setLocation();
         setStatusbar();
         setInitLayout();
-        setDataKaos();
-        setDataCelana();
-        setDataJaket();
-        setDataSprei();
-        setDataKarpet();
         setInputData();
         getCurrentLocation();
     }
@@ -68,11 +64,11 @@ public class DryCleanActivity extends AppCompatActivity {
             SimpleLocation.openSettings(this);
         }
 
-        //get location
+        // Get location
         strCurrentLatitude = simpleLocation.getLatitude();
         strCurrentLongitude = simpleLocation.getLongitude();
 
-        //set location lat long
+        // Set location lat long
         strCurrentLatLong = strCurrentLatitude + "," + strCurrentLongitude;
     }
 
@@ -94,27 +90,29 @@ public class DryCleanActivity extends AppCompatActivity {
         tvJumlahBarang = findViewById(R.id.tvJumlahBarang);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
 
-        tvKaos = findViewById(R.id.tvKaos);
-        tvCelana = findViewById(R.id.tvCelana);
-        tvJaket = findViewById(R.id.tvJaket);
-        tvSprei = findViewById(R.id.tvSprei);
-        tvKarpet = findViewById(R.id.tvKarpet);
-        tvPriceKaos = findViewById(R.id.tvPriceKaos);
-        tvPriceCelana = findViewById(R.id.tvPriceCelana);
-        tvPriceJaket = findViewById(R.id.tvPriceJaket);
-        tvPriceSprei = findViewById(R.id.tvPriceSprei);
-        tvPriceKarpet = findViewById(R.id.tvPriceKarpet);
+        itemTextViews[0] = findViewById(R.id.tvKaos);
+        itemTextViews[1] = findViewById(R.id.tvCelana);
+        itemTextViews[2] = findViewById(R.id.tvJaket);
+        itemTextViews[3] = findViewById(R.id.tvSprei);
+        itemTextViews[4] = findViewById(R.id.tvKarpet);
 
-        imageAdd1 = findViewById(R.id.imageAdd1);
-        imageAdd2 = findViewById(R.id.imageAdd2);
-        imageAdd3 = findViewById(R.id.imageAdd3);
-        imageAdd4 = findViewById(R.id.imageAdd4);
-        imageAdd5 = findViewById(R.id.imageAdd5);
-        imageMinus1 = findViewById(R.id.imageMinus1);
-        imageMinus2 = findViewById(R.id.imageMinus2);
-        imageMinus3 = findViewById(R.id.imageMinus3);
-        imageMinus4 = findViewById(R.id.imageMinus4);
-        imageMinus5 = findViewById(R.id.imageMinus5);
+        priceTextViews[0] = findViewById(R.id.tvPriceKaos);
+        priceTextViews[1] = findViewById(R.id.tvPriceCelana);
+        priceTextViews[2] = findViewById(R.id.tvPriceJaket);
+        priceTextViews[3] = findViewById(R.id.tvPriceSprei);
+        priceTextViews[4] = findViewById(R.id.tvPriceKarpet);
+
+        addButtons[0] = findViewById(R.id.imageAdd1);
+        addButtons[1] = findViewById(R.id.imageAdd2);
+        addButtons[2] = findViewById(R.id.imageAdd3);
+        addButtons[3] = findViewById(R.id.imageAdd4);
+        addButtons[4] = findViewById(R.id.imageAdd5);
+
+        minusButtons[0] = findViewById(R.id.imageMinus1);
+        minusButtons[1] = findViewById(R.id.imageMinus2);
+        minusButtons[2] = findViewById(R.id.imageMinus3);
+        minusButtons[3] = findViewById(R.id.imageMinus4);
+        minusButtons[4] = findViewById(R.id.imageMinus5);
 
         btnCheckout = findViewById(R.id.btnCheckout);
 
@@ -131,106 +129,37 @@ public class DryCleanActivity extends AppCompatActivity {
         tvJumlahBarang.setText("0 items");
         tvTotalPrice.setText("Rp 0");
         tvInfo.setText("Cuci kering adalah proses pencucian pakaian menggunakan bahan kimia dan teknik tertentu tanpa air.");
+
+        for (int i = 0; i < 5; i++) {
+            itemTextViews[i].setText(FunctionHelper.rupiahFormat(prices[i]));
+            final int index = i;
+            setItemButtons(index);
+        }
     }
 
-    private void setDataKaos() {
-        tvKaos.setText(FunctionHelper.rupiahFormat(hargaKaos));
-        imageAdd1.setOnClickListener(v -> {
-            itemCount1 = itemCount1 + 1;
-            tvPriceKaos.setText(itemCount1);
-            countKaos = hargaKaos * itemCount1;
+    private void setItemButtons(int index) {
+        addButtons[index].setOnClickListener(v -> {
+            itemCounts[index]++;
+            priceTextViews[index].setText(String.valueOf(itemCounts[index]));
             setTotalPrice();
         });
 
-        imageMinus1.setOnClickListener(v -> {
-            if (itemCount1 > 0) {
-                itemCount1 = itemCount1 - 1;
-                tvPriceKaos.setText(itemCount1);
+        minusButtons[index].setOnClickListener(v -> {
+            if (itemCounts[index] > 0) {
+                itemCounts[index]--;
+                priceTextViews[index].setText(String.valueOf(itemCounts[index]));
             }
-            countKaos = hargaKaos * itemCount1;
-            setTotalPrice();
-        });
-    }
-
-    private void setDataCelana() {
-        tvCelana.setText(FunctionHelper.rupiahFormat(hargaCelana));
-        imageAdd2.setOnClickListener(v -> {
-            itemCount2 = itemCount2 + 1;
-            tvPriceCelana.setText(itemCount2);
-            countCelana = hargaCelana * itemCount2;
-            setTotalPrice();
-        });
-
-        imageMinus2.setOnClickListener(v -> {
-            if (itemCount2 > 0) {
-                itemCount2 = itemCount2 - 1;
-                tvPriceCelana.setText(itemCount2);
-            }
-            countCelana = hargaCelana * itemCount2;
-            setTotalPrice();
-        });
-    }
-
-    private void setDataJaket() {
-        tvJaket.setText(FunctionHelper.rupiahFormat(hargaJaket));
-        imageAdd3.setOnClickListener(v -> {
-            itemCount3 = itemCount3 + 1;
-            tvPriceJaket.setText(itemCount3);
-            countJaket = hargaJaket * itemCount3;
-            setTotalPrice();
-        });
-
-        imageMinus3.setOnClickListener(v -> {
-            if (itemCount3 > 0) {
-                itemCount3 = itemCount3 - 1;
-                tvPriceJaket.setText(itemCount3);
-            }
-            countJaket = hargaJaket * itemCount3;
-            setTotalPrice();
-        });
-    }
-
-    private void setDataSprei() {
-        tvSprei.setText(FunctionHelper.rupiahFormat(hargaSprei));
-        imageAdd4.setOnClickListener(v -> {
-            itemCount4 = itemCount4 + 1;
-            tvPriceSprei.setText(itemCount4);
-            countSprei = hargaSprei * itemCount4;
-            setTotalPrice();
-        });
-
-        imageMinus4.setOnClickListener(v -> {
-            if (itemCount4 > 0) {
-                itemCount4 = itemCount4 - 1;
-                tvPriceSprei.setText(itemCount4);
-            }
-            countSprei = hargaSprei * itemCount4;
-            setTotalPrice();
-        });
-    }
-
-    private void setDataKarpet() {
-        tvKarpet.setText(FunctionHelper.rupiahFormat(hargaKarpet));
-        imageAdd5.setOnClickListener(v -> {
-            itemCount5 = itemCount5 + 1;
-            tvPriceKarpet.setText(itemCount5);
-            countKarpet = hargaKarpet * itemCount5;
-            setTotalPrice();
-        });
-
-        imageMinus5.setOnClickListener(v -> {
-            if (itemCount5 > 0) {
-                itemCount5 = itemCount5 - 1;
-                tvPriceKarpet.setText(itemCount5);
-            }
-            countKarpet = hargaKarpet * itemCount5;
             setTotalPrice();
         });
     }
 
     private void setTotalPrice() {
-        totalItems = itemCount1 + itemCount2 + itemCount3 + itemCount4 + itemCount5;
-        totalPrice = countKaos + countCelana + countJaket + countSprei + countKarpet;
+        totalItems = 0;
+        totalPrice = 0;
+        for (int i = 0; i < 5; i++) {
+            totalItems += itemCounts[i];
+            totalPrice += prices[i] * itemCounts[i];
+        }
 
         tvJumlahBarang.setText(totalItems + " items");
         tvTotalPrice.setText(FunctionHelper.rupiahFormat(totalPrice));
@@ -270,5 +199,4 @@ public class DryCleanActivity extends AppCompatActivity {
         }
         window.setAttributes(layoutParams);
     }
-
 }
