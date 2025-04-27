@@ -38,50 +38,46 @@ import im.delight.android.location.SimpleLocation;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    int REQ_PERMISSION = 100;
-    double strCurrentLatitude;
-    double strCurrentLongitude;
-    String strCurrentLocation;
-    GoogleMap mapsView;
-    SimpleLocation simpleLocation;
-    ProgressDialog progressDialog;
-    MainViewModel mainViewModel;
-    MenuAdapter menuAdapter;
-    MainAdapter mainAdapter;
-    ModelMenu modelMenu;
-    RecyclerView rvMenu, rvRekomendasi;
-    LinearLayout layoutHistory;
-    List<ModelMenu> modelMenuList = new ArrayList<>();
+    private static final int REQ_PERMISSION = 100;
+    private double strCurrentLatitude;
+    private double strCurrentLongitude;
+    private String strCurrentLocation;
+    private GoogleMap mapsView;
+    private SimpleLocation simpleLocation;
+    private ProgressDialog progressDialog;
+    private MainViewModel mainViewModel;
+    private MenuAdapter menuAdapter;
+    private MainAdapter mainAdapter;
+    private RecyclerView rvMenu, rvRekomendasi;
+    private LinearLayout layoutHistory;
+    private List<ModelMenu> modelMenuList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        setStatusbar();
-        setPermission();
-        setLocation();
-        setInitLayout();
-        setMenu();
-        getLocationViewModel();
+        setStatusBarTransparent();
+        checkLocationPermission();
+        initializeLocation();
+        initializeViews();
+        setupMenu();
+        loadLocationData();
     }
 
-    private void setLocation() {
+    private void initializeLocation() {
         simpleLocation = new SimpleLocation(this);
 
         if (!simpleLocation.hasLocationEnabled()) {
             SimpleLocation.openSettings(this);
         }
 
-        //get location
         strCurrentLatitude = simpleLocation.getLatitude();
         strCurrentLongitude = simpleLocation.getLongitude();
-
-        //set location lat long
         strCurrentLocation = strCurrentLatitude + "," + strCurrentLongitude;
     }
 
-    private void setInitLayout() {
+    private void initializeViews() {
         rvMenu = findViewById(R.id.rvMenu);
         rvRekomendasi = findViewById(R.id.rvRekomendasi);
         layoutHistory = findViewById(R.id.layoutHistory);
@@ -89,9 +85,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Mohon Tunggu…");
         progressDialog.setCancelable(false);
-        progressDialog.setMessage("sedang menampilkan lokasi");
+        progressDialog.setMessage("Sedang menampilkan lokasi...");
 
-        rvMenu.setLayoutManager(new GridLayoutManager(this, 2, RecyclerView.VERTICAL, false));
+        rvMenu.setLayoutManager(new GridLayoutManager(this, 2));
         rvMenu.setHasFixedSize(true);
 
         mainAdapter = new MainAdapter(this);
@@ -99,15 +95,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         rvRekomendasi.setAdapter(mainAdapter);
         rvRekomendasi.setHasFixedSize(true);
 
-        layoutHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
-            startActivity(intent);
-        });
+        layoutHistory.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, HistoryActivity.class)));
     }
 
-    private void setPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQ_PERMISSION);
         }
     }
@@ -115,73 +109,52 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        for (int grantResult : grantResults) {
-            if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = getIntent();
-                finish();
-                startActivity(intent);
+        if (requestCode == REQ_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                recreate();
             }
         }
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        this.mapsView = googleMap;
-
-        //viewmodel
-        getLocationViewModel();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQ_PERMISSION && resultCode == RESULT_OK) {
-
-            //load viewmodel
-            getLocationViewModel();
-        }
-    }
-
-    private void setStatusbar() {
+    private void setStatusBarTransparent() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            );
         }
-
         if (Build.VERSION.SDK_INT >= 21) {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
     }
 
-    private void setMenu() {
-        modelMenu = new ModelMenu("Cuci Basah", R.drawable.ic_cuci_basah);
-        modelMenuList.add(modelMenu);
-        modelMenu = new ModelMenu("Dry Cleaning", R.drawable.ic_dry_cleaning);
-        modelMenuList.add(modelMenu);
-        modelMenu = new ModelMenu("Premium Wash", R.drawable.ic_premium_wash);
-        modelMenuList.add(modelMenu);
-        modelMenu = new ModelMenu("Setrika", R.drawable.ic_setrika);
-        modelMenuList.add(modelMenu);
+    private void setupMenu() {
+        modelMenuList.add(new ModelMenu("Cuci Basah", R.drawable.ic_cuci_basah));
+        modelMenuList.add(new ModelMenu("Dry Cleaning", R.drawable.ic_dry_cleaning));
+        modelMenuList.add(new ModelMenu("Premium Wash", R.drawable.ic_premium_wash));
+        modelMenuList.add(new ModelMenu("Setrika", R.drawable.ic_setrika));
 
         menuAdapter = new MenuAdapter(this, modelMenuList);
         rvMenu.setAdapter(menuAdapter);
 
         menuAdapter.setOnItemClickListener(modelMenu -> {
-            if (modelMenu.getTvTitle().equals("Cuci Basah")) {
-                Intent intent = new Intent(new Intent(MainActivity.this, CuciBasahActivity.class));
-                intent.putExtra(CuciBasahActivity.DATA_TITLE, modelMenu.getTvTitle());
-                startActivity(intent);
-            } else if (modelMenu.getTvTitle().equals("Dry Cleaning")) {
-                Intent intent = new Intent(new Intent(MainActivity.this, DryCleanActivity.class));
-                intent.putExtra(DryCleanActivity.DATA_TITLE, modelMenu.getTvTitle());
-                startActivity(intent);
-            } else if (modelMenu.getTvTitle().equals("Premium Wash")) {
-                Intent intent = new Intent(new Intent(MainActivity.this, PremiumWashActivity.class));
-                intent.putExtra(PremiumWashActivity.DATA_TITLE, modelMenu.getTvTitle());
-                startActivity(intent);
-            } else if (modelMenu.getTvTitle().equals("Setrika")) {
-                Intent intent = new Intent(new Intent(MainActivity.this, IroningActivity.class));
-                intent.putExtra(IroningActivity.DATA_TITLE, modelMenu.getTvTitle());
+            Intent intent = null;
+            switch (modelMenu.getTvTitle()) {
+                case "Cuci Basah":
+                    intent = new Intent(this, CuciBasahActivity.class);
+                    break;
+                case "Dry Cleaning":
+                    intent = new Intent(this, DryCleanActivity.class);
+                    break;
+                case "Premium Wash":
+                    intent = new Intent(this, PremiumWashActivity.class);
+                    break;
+                case "Setrika":
+                    intent = new Intent(this, IroningActivity.class);
+                    break;
+            }
+            if (intent != null) {
+                intent.putExtra("DATA_TITLE", modelMenu.getTvTitle());
                 startActivity(intent);
             }
         });
@@ -198,20 +171,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         window.setAttributes(layoutParams);
     }
 
-    private void getLocationViewModel() {
-        mainViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(MainViewModel.class);
+    private void loadLocationData() {
+        mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.setMarkerLocation(strCurrentLocation);
         progressDialog.show();
         mainViewModel.getMarkerLocation().observe(this, modelResults -> {
-            if (modelResults.size() != 0) {
+            if (modelResults != null && !modelResults.isEmpty()) {
                 mainAdapter.setLocationAdapter(modelResults);
-                progressDialog.dismiss();
-            } else {
-                progressDialog.show();
             }
             progressDialog.dismiss();
         });
-
     }
 
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.mapsView = googleMap;
+        loadLocationData();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_PERMISSION && resultCode == RESULT_OK) {
+            loadLocationData();
+        }
+    }
 }

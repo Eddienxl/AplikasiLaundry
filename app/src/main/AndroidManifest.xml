@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.fadli.aplikasilaundry">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -16,34 +17,57 @@
         android:theme="@style/Theme.LaundryApps"
         android:usesCleartextTraffic="true"
         tools:targetApi="s">
+
+        <!-- Login Activity (LAUNCHER) -->
         <activity
-            android:name=".view.history.HistoryActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.cucibasah.CuciBasahActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.dryclean.DryCleanActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.ironing.IroningActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.premiumwash.PremiumWashActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.main.MainActivity"
+            android:name=".view.auth.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Register Activity -->
+        <activity
+            android:name=".view.auth.RegisterActivity"
+            android:exported="true" />
+
+        <!-- History -->
+        <activity
+            android:name=".view.history.HistoryActivity"
+            android:exported="true" />
+
+        <!-- Cuci Basah -->
+        <activity
+            android:name=".view.cucibasah.CuciBasahActivity"
+            android:exported="true" />
+
+        <!-- Dry Clean -->
+        <activity
+            android:name=".view.dryclean.DryCleanActivity"
+            android:exported="true" />
+
+        <!-- Ironing -->
+        <activity
+            android:name=".view.ironing.IroningActivity"
+            android:exported="true" />
+
+        <!-- Premium Wash -->
+        <activity
+            android:name=".view.premiumwash.PremiumWashActivity"
+            android:exported="true" />
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".view.main.MainActivity"
+            android:exported="true" />
+
+        <!-- API Key Metadata -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR API KEY" />
+            android:value="YOUR_API_KEY" />
+
     </application>
 
 </manifest>
